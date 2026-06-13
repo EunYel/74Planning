@@ -1,0 +1,12 @@
+{
+  "name": "hajogi-planner",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@upstash/redis": "^1.38.0"
+  },
+  "scripts": {
+    "dev": "npx serve public",
+    "build": "echo 'static site'"
+  }
+}

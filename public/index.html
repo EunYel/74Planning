@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>취준 워크스페이스</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="routine-scope">
+    <div class="win">
+      <div class="titlebar">
+        <div class="dots"><i></i><i></i><i class="live"></i></div>
+        <span class="fname"><span class="dot"></span><b id="fnameTab">today.md</b></span>
+        <span class="fdate" id="brandDate"></span>
+        <div class="tb-right">
+          <span class="streak-badge" id="streakTop">🔥 0일</span>
+          <button class="iconbtn" id="dataBtn" onclick="openData()" title="데이터 · 백업">{ }</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tab on" data-v="today" onclick="setView('today',this)"><span class="fi">#</span>오늘.md</div>
+        <div class="tab" data-v="cal" onclick="setView('cal',this)"><span class="fi">#</span>달력.md</div>
+      </div>
+      <div class="body">
+        <div class="view on" id="v-today"></div>
+        <div class="view" id="v-cal"></div>
+        <div class="view" id="v-data"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="routine-mbg" id="modalBg">
+    <div class="modal">
+      <h3>항목 수정</h3>
+      <label>section</label>
+      <input type="text" id="m-section" placeholder="예: 저녁 — 토익">
+      <label>content</label>
+      <input type="text" id="m-text">
+      <label>tag</label>
+      <select id="m-tag">
+        <option value="ct">토익</option>
+        <option value="cv">단어</option>
+        <option value="cs">토스</option>
+        <option value="cc">코테</option>
+        <option value="cj">자소서</option>
+        <option value="cn">NCS</option>
+        <option value="cg">기타</option>
+      </select>
+      <div class="macts">
+        <button class="btn sm" onclick="closeModal()">취소</button>
+        <button class="btn sm pri" onclick="saveModal()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="routine-toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
