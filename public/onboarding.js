@@ -17,6 +17,7 @@ let obS = {
   step:  1,
   slots: Array.from({length:7}, () => new Array(32).fill(false)),
   goals: [],
+  pendingPlan: null,
 };
 
 /* ── localStorage ── */
@@ -213,7 +214,7 @@ function obRender() {
     const h = obS.slots.reduce((t, d) => t + d.filter(Boolean).length * 0.5, 0);
     bg.innerHTML = `
       <div class="ob-panel ob-wide">
-        <div class="ob-dots"><span class="on"></span><span class="on"></span><span></span></div>
+        <div class="ob-dots"><span class="on"></span><span class="on"></span><span></span><span></span></div>
         <h1 class="ob-h1">언제 공부할 수 있어요?</h1>
         <p class="ob-p">드래그(또는 터치)해서 공부 가능한 시간대를 선택해주세요.
           &nbsp;<b id="ob-hours-val" style="color:var(--pt)">${h}시간/주</b></p>
@@ -228,7 +229,7 @@ function obRender() {
   } else if (obS.step === 3) {
     bg.innerHTML = `
       <div class="ob-panel">
-        <div class="ob-dots"><span class="on"></span><span class="on"></span><span class="on"></span></div>
+        <div class="ob-dots"><span class="on"></span><span class="on"></span><span class="on"></span><span></span></div>
         <h1 class="ob-h1">목표를 설정해요</h1>
         <p class="ob-p">어떤 공부를 얼마나 할 계획인가요? 빠른 추가를 쓰거나 직접 입력해주세요.</p>
 
@@ -259,10 +260,114 @@ function obRender() {
     const hEl = document.getElementById('ob-goal-hours');
     nEl.addEventListener('keydown', e => { if (e.key === 'Enter') hEl.focus(); });
     hEl.addEventListener('keydown', e => { if (e.key === 'Enter') obAddGoal(); });
+
+  } else if (obS.step === 4) {
+    obRenderStep4();
   }
 }
 
 function obGoTo(step) { obS.step = step; obRender(); }
+
+/* ── step 4: plan preview & edit ── */
+function obEsc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function obRenderStep4() {
+  const bg = document.getElementById('obBg');
+  if (!bg) return;
+
+  const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+  const DAY_NAMES_FULL = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+
+  let daysHtml = '';
+  for (const dk of DAY_ORDER) {
+    const tasks = obS.pendingPlan && Array.isArray(obS.pendingPlan[dk]) ? obS.pendingPlan[dk] : [];
+    if (!tasks.length) continue;
+
+    let tasksHtml = tasks.map((task, idx) => `
+      <div class="ob-plan-task">
+        <span class="ob-plan-s">${obEsc(task.s)}</span>
+        <div class="ob-plan-t" contenteditable="true" data-day="${dk}" data-idx="${idx}">${obEsc(task.t)}</div>
+        <button class="ob-plan-del" onclick="obPlanRemoveTask(${dk},${idx})">×</button>
+      </div>`).join('');
+
+    daysHtml += `
+      <div class="ob-plan-day">
+        <div class="ob-plan-day-hd">
+          <span>${DAY_NAMES_FULL[dk]}</span>
+          <span class="ob-plan-cnt">${tasks.length}개</span>
+        </div>
+        <div class="ob-plan-tasks">${tasksHtml}</div>
+        <button class="ob-plan-add" onclick="obPlanAddTask(${dk})">+ 태스크 추가</button>
+      </div>`;
+  }
+
+  bg.innerHTML = `
+    <div class="ob-panel ob-wide">
+      <div class="ob-dots"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span></div>
+      <h1 class="ob-h1">플래너 미리보기</h1>
+      <p class="ob-p">태스크를 클릭해서 수정하거나 × 로 삭제할 수 있어요. 하루에 태스크를 직접 추가할 수도 있어요.</p>
+      <div class="ob-plan-days">${daysHtml}</div>
+      <div class="ob-footer" style="margin-top:20px">
+        <button onclick="obGoTo(3)" class="ob-btn ob-ghost">← 이전</button>
+        <button onclick="obConfirm()" class="ob-btn ob-pri">확정하기 →</button>
+      </div>
+    </div>`;
+}
+
+function obFlushPlan() {
+  document.querySelectorAll('.ob-plan-t[contenteditable]').forEach(el => {
+    const dk  = parseInt(el.dataset.day);
+    const idx = parseInt(el.dataset.idx);
+    if (obS.pendingPlan && Array.isArray(obS.pendingPlan[dk]) && obS.pendingPlan[dk][idx]) {
+      const val = el.textContent.trim();
+      if (val) obS.pendingPlan[dk][idx].t = val;
+    }
+  });
+}
+
+function obPlanRemoveTask(dk, idx) {
+  obFlushPlan();
+  if (obS.pendingPlan && Array.isArray(obS.pendingPlan[dk])) {
+    obS.pendingPlan[dk].splice(idx, 1);
+  }
+  obRenderStep4();
+}
+
+function obPlanAddTask(dk) {
+  obFlushPlan();
+  if (!obS.pendingPlan) obS.pendingPlan = {};
+  if (!Array.isArray(obS.pendingPlan[dk])) obS.pendingPlan[dk] = [];
+  obS.pendingPlan[dk].push({ s: '기타', t: '새 태스크', g: 'cg' });
+  obRenderStep4();
+  setTimeout(() => {
+    const dayTasks = document.querySelectorAll(`.ob-plan-t[data-day="${dk}"]`);
+    if (dayTasks.length) {
+      const el = dayTasks[dayTasks.length - 1];
+      el.focus();
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+  }, 50);
+}
+
+function obConfirm() {
+  obFlushPlan();
+  if (!obS.pendingPlan) return;
+  obSaveSlots();
+  obSaveGoals();
+  try { localStorage.setItem(LS_TEMPLATES, JSON.stringify(obS.pendingPlan)); } catch(e){}
+  try { localStorage.setItem(OB_DONE_KEY, '1'); } catch(e){}
+  const bg = document.getElementById('obBg');
+  if (bg) { bg.style.display = 'none'; bg.innerHTML = ''; }
+  if (typeof initApp === 'function') initApp();
+  setTimeout(() => { if (typeof toast === 'function') toast('플래너가 생성됐어요 🎉'); }, 100);
+}
 
 /* ── step handlers ── */
 function obStep1Next() {
@@ -319,14 +424,9 @@ async function obFinish() {
     setTimeout(() => { if (typeof toast === 'function') toast('AI 연결 실패 — 기본 로직으로 생성했어요'); }, 200);
   }
 
-  obSaveSlots();
-  obSaveGoals();
-  try { localStorage.setItem(LS_TEMPLATES, JSON.stringify(plan)); } catch(e){}
-  try { localStorage.setItem(OB_DONE_KEY, '1'); } catch(e){}
-
-  if (bg) { bg.style.display = 'none'; bg.innerHTML = ''; }
-  if (typeof initApp === 'function') initApp();
-  setTimeout(() => { if (typeof toast === 'function') toast('플래너가 생성됐어요 🎉'); }, 100);
+  obS.pendingPlan = plan;
+  obS.step = 4;
+  obRender();
 }
 
 function obSkip() {
