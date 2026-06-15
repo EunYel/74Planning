@@ -375,7 +375,7 @@ function rToday() {
   });
 
   document.getElementById('v-today').innerHTML =
-    `<div class="code">${L.join('')}</div>${jandiGridHTML(13)}`;
+    `<div class="code">${L.join('')}</div>`;
 }
 
 function toggleCheck(k, i) { tc(k, i); rerenderActive(); updateChrome(); }
