@@ -215,26 +215,28 @@ function rBoardFeed() {
   const cards = list.map(p => {
     const cc=bCatColor(p.category);
     const tags=(p.tags||[]).map(t=>`<span onclick="event.stopPropagation();bSetTag('${bE(t)}')" class="b-tag">#${bE(t)}</span>`).join('');
-    const thumb=p.thumb?`<div class="b-thumb" style="background-image:url('${p.thumb}')"></div>`:'';
+    const bodyRow = p.thumb
+      ? `<div class="b-card-media">
+           <div class="b-thumb" style="background-image:url('${p.thumb}')"></div>
+           <div class="b-card-body">${bE(bExcerpt(p.body))}</div>
+         </div>`
+      : `<div class="b-card-body">${bE(bExcerpt(p.body))}</div>`;
     return `
       <div onclick="bOpenDetail('${bE(p.id)}')" class="b-card">
-        ${thumb}
-        <div style="flex:1;min-width:0">
-          <div class="b-card-meta">
-            <span style="font-size:17px;line-height:1">${p.mood}</span>
-            <span class="b-cat-dot" style="color:${cc}"><i style="background:${cc}"></i>${bE(p.category)}</span>
-            <span class="b-ts">${bFmtRel(p.createdAt)}</span>
-          </div>
-          <div class="b-card-title">${bE(p.title||'(제목 없음)')}</div>
-          <div class="b-card-body">${bE(bExcerpt(p.body))}</div>
-          <div class="b-card-footer">
-            ${tags}
-            <span class="b-reactions">
-              <span onclick="event.stopPropagation();bToggleLike('${bE(p.id)}')" style="cursor:pointer;color:${p.liked?'#d07a7a':'#787e8a'}">${p.liked?'♥':'♡'} ${p.likes}</span>
-              <span onclick="event.stopPropagation();bToggleBookmark('${bE(p.id)}')" style="cursor:pointer;color:${p.bookmarked?'#d0a94e':'#787e8a'}">${p.bookmarked?'★':'☆'}</span>
-              <span>💬 ${bCountC(p.comments)}</span>
-            </span>
-          </div>
+        <div class="b-card-meta">
+          <span style="font-size:16px;line-height:1">${p.mood}</span>
+          <span class="b-cat-dot" style="color:${cc}"><i style="background:${cc}"></i>${bE(p.category)}</span>
+          <span class="b-ts">${bFmtRel(p.createdAt)}</span>
+        </div>
+        <div class="b-card-title">${bE(p.title||'(제목 없음)')}</div>
+        ${bodyRow}
+        <div class="b-card-footer">
+          ${tags}
+          <span class="b-reactions">
+            <span onclick="event.stopPropagation();bToggleLike('${bE(p.id)}')" style="cursor:pointer;color:${p.liked?'#d07a7a':'#787e8a'}">${p.liked?'♥':'♡'} ${p.likes}</span>
+            <span onclick="event.stopPropagation();bToggleBookmark('${bE(p.id)}')" style="cursor:pointer;color:${p.bookmarked?'#d0a94e':'#787e8a'}">${p.bookmarked?'★':'☆'}</span>
+            <span>💬 ${bCountC(p.comments)}</span>
+          </span>
         </div>
       </div>`;
   }).join('');
