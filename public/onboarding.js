@@ -286,23 +286,47 @@ function obStep2Next() {
   obGoTo(3);
 }
 
-function obFinish() {
+async function obFinish() {
   if (!obS.goals.length) {
     const el = document.getElementById('ob-goal-list');
     if (el) el.innerHTML = '<div class="ob-hint-empty" style="color:#e07b7b">// 목표를 1개 이상 추가해주세요</div>';
     return;
   }
-  const plan = obGeneratePlan();
+
+  // 로딩 화면
+  const bg = document.getElementById('obBg');
+  if (bg) bg.innerHTML = `
+    <div class="ob-panel" style="text-align:center;padding:52px 28px">
+      <div class="ob-spinner"></div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--mut);margin-top:20px">// GPT가 플래너를 생성하고 있어요...</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--cmt);margin-top:8px">목표와 시간표를 분석 중</div>
+    </div>`;
+
+  let plan;
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ goals: obS.goals, slots: obS.slots }),
+    });
+    if (!res.ok) throw new Error('status ' + res.status);
+    const data = await res.json();
+    if (!data.plan) throw new Error('no plan');
+    plan = data.plan;
+  } catch (err) {
+    console.warn('GPT fallback:', err.message);
+    plan = obGeneratePlan();
+    setTimeout(() => { if (typeof toast === 'function') toast('AI 연결 실패 — 기본 로직으로 생성했어요'); }, 200);
+  }
+
   obSaveSlots();
   obSaveGoals();
-  // Save templates only — state/overrides/board data untouched
   try { localStorage.setItem(LS_TEMPLATES, JSON.stringify(plan)); } catch(e){}
   try { localStorage.setItem(OB_DONE_KEY, '1'); } catch(e){}
 
-  const bg = document.getElementById('obBg');
   if (bg) { bg.style.display = 'none'; bg.innerHTML = ''; }
   if (typeof initApp === 'function') initApp();
-  if (typeof toast  === 'function') setTimeout(() => toast('플래너가 생성됐어요 🎉'), 100);
+  setTimeout(() => { if (typeof toast === 'function') toast('플래너가 생성됐어요 🎉'); }, 100);
 }
 
 function obSkip() {

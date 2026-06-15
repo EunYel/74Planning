@@ -764,6 +764,14 @@ body {
 .ob-goal-del { background: transparent; border: none; color: var(--cmt); cursor: pointer; font-size: 17px; padding: 0 4px; line-height: 1; }
 .ob-goal-del:hover { color: #e07b7b; }
 .ob-hint-empty { font-family: var(--mono); font-size: 12px; color: var(--cmt); padding: 16px 0; }
+.ob-spinner {
+  width: 36px; height: 36px; margin: 0 auto;
+  border: 3px solid var(--line);
+  border-top-color: var(--pt);
+  border-radius: 50%;
+  animation: ob-spin .8s linear infinite;
+}
+@keyframes ob-spin { to { transform: rotate(360deg); } }
 
 /* timetable */
 .ob-tt { display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; min-width: 320px; }
