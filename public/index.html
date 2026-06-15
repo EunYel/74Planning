@@ -23,11 +23,13 @@
       <div class="tabs">
         <div class="tab on" data-v="today" onclick="setView('today',this)"><span class="fi">#</span>오늘.md</div>
         <div class="tab" data-v="cal" onclick="setView('cal',this)"><span class="fi">#</span>달력.md</div>
+        <div class="tab" data-v="board" onclick="setView('board',this)"><span class="fi">#</span>생각.md</div>
       </div>
       <div class="body">
         <div class="view on" id="v-today"></div>
         <div class="view" id="v-cal"></div>
         <div class="view" id="v-data"></div>
+        <div class="view" id="v-board"></div>
       </div>
     </div>
   </div>
@@ -56,8 +58,11 @@
     </div>
   </div>
 
+  <div class="routine-mbg" id="boardComposerBg"></div>
+
   <div class="routine-toast" id="toast"></div>
 
   <script src="app.js"></script>
+  <script src="board.js"></script>
 </body>
 </html>

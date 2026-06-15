@@ -329,9 +329,10 @@ function updateChrome() {
     `${TODAY.getFullYear()}.${String(TODAY.getMonth()+1).padStart(2,'0')}.${String(TODAY.getDate()).padStart(2,'0')} (${DKOR[TODAY.getDay()]})`;
 }
 function rerenderActive() {
-  if (activeView === 'today')    rToday();
-  else if (activeView === 'cal') rCal();
-  else if (activeView === 'data') rData();
+  if (activeView === 'today')      rToday();
+  else if (activeView === 'cal')   rCal();
+  else if (activeView === 'data')  rData();
+  else if (activeView === 'board') rBoard();
 }
 
 /* ── today view ── */
@@ -706,7 +707,7 @@ function resetTemplatesOnly() {
 }
 
 /* ── view switching ── */
-const FNAME = { today:'today.md', cal:'calendar.md', data:'data.json' };
+const FNAME = { today:'today.md', cal:'calendar.md', data:'data.json', board:'생각.md' };
 
 function setView(id, btn) {
   activeView = id;
@@ -747,6 +748,7 @@ function initApp() {
 
   updateChrome();
   rToday();
+  initBoard();
 
   if (getSyncKey()) syncPull();
 }
