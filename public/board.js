@@ -144,11 +144,13 @@ function bStartReply(id)  { bS.replyTo = bS.replyTo===id ? null : id; bS.replyDr
 function bCancelReply()   { bS.replyTo=null; bS.replyDraft=''; rBoard(); }
 function bSubmitReply(id) {
   const t=bS.replyDraft; if(!t||!t.trim()) return;
-  bAddComment(id,t); bS.replyTo=null; bS.replyDraft='';
+  bS.replyTo=null; bS.replyDraft='';
+  bAddComment(id,t);
 }
 function bSubmitRoot() {
   const t=bS.rootDraft; if(!t||!t.trim()){ toast('댓글을 입력해주세요'); return; }
-  bAddComment(null,t); bS.rootDraft='';
+  bS.rootDraft='';
+  bAddComment(null,t);
 }
 
 /* ── comment tree (recursive HTML) ── */

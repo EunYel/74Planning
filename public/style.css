@@ -669,10 +669,11 @@ body {
 #boardComposerBg {
   display:none; position:fixed; inset:0;
   background:rgba(0,0,0,.65); z-index:1000;
-  overflow-y:auto; padding:24px 16px;
+  overflow-y:auto; padding:28px 16px;
   backdrop-filter: blur(4px);
+  align-items:flex-start; justify-content:center;
 }
-#boardComposerBg.show { display:flex; align-items:flex-start; justify-content:center; }
+#boardComposerBg.show { display:flex; }
 .b-modal {
   background:#13151c; border:1px solid #252a36;
   border-radius:16px; padding:24px 22px;
@@ -738,9 +739,10 @@ body {
   .routine-scope .b-detail-title { font-size: 17px; }
   .routine-scope .b-btn { padding: 10px 14px; }
 
-  /* modal full-screen on mobile */
-  .routine-mbg .modal { max-width: 100%; border-radius: 20px 20px 0 0; }
+  /* modals: bottom sheet on mobile */
   .routine-mbg { align-items: flex-end; padding: 0; }
+  .routine-mbg .modal { max-width: 100%; border-radius: 20px 20px 0 0; }
+  #boardComposerBg { align-items: flex-end; padding: 0; }
   .b-modal { border-radius: 20px 20px 0 0; max-width: 100%; }
 }
 
