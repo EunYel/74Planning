@@ -16,67 +16,7 @@ const QUOTES = [
   '오늘 치 분량만. 그거면 충분.',
 ];
 
-/* DEFAULT_T[0]=일, [1]=월, …, [6]=토 */
-const DEFAULT_T = {
-  0: [
-    {s:'단어 테스트', t:'해커스 토익 단어 — 월~금 진행 단어 테스트', g:'ct'},
-    {s:'단어 테스트', t:'틀린 단어 오답노트 정리', g:'cv'},
-    {s:'자소서',      t:'자소서 STAR 경험 1개 작성', g:'cj'},
-    {s:'토스',        t:'토스 모의 응시 1회', g:'cs'},
-    {s:'계획',        t:'다음 주 투두 세팅 (10분)', g:'cg'},
-    {s:'공고',        t:'채용 공고 확인 (10분)', g:'cg'},
-  ],
-  1: [
-    {s:'출근 지하철',  t:'토익 LC 10문제', g:'ct'},
-    {s:'단어',         t:'해커스 토익 단어 unit 3개 암기', g:'cv'},
-    {s:'단어',         t:'전날 틀린 단어 재암기', g:'cv'},
-    {s:'저녁 — 토익',  t:'RC 파트7 지문 2개 (타이머)', g:'ct'},
-    {s:'저녁 — 토익',  t:'오답 분석 + 모르는 단어 저장', g:'ct'},
-    {s:'저녁 — 토익',  t:'파트5·6 문법 문제 10개', g:'ct'},
-    {s:'공고',         t:'채용 공고 확인 (10분)', g:'cg'},
-  ],
-  2: [
-    {s:'출근 지하철',  t:'토익 LC 10문제 (가볍게)', g:'ct'},
-    {s:'단어',         t:'해커스 토익 단어 unit 3개 암기', g:'cv'},
-    {s:'단어',         t:'전날 틀린 단어 재암기', g:'cv'},
-    {s:'퇴근 지하철',  t:'코테 문제 1개 (가볍게)', g:'cc'},
-    {s:'공고',         t:'채용 공고 확인 (10분)', g:'cg'},
-  ],
-  3: [
-    {s:'출근 지하철',  t:'토익 LC 10문제', g:'ct'},
-    {s:'단어',         t:'해커스 토익 단어 unit 3개 암기', g:'cv'},
-    {s:'단어',         t:'전날 틀린 단어 재암기', g:'cv'},
-    {s:'저녁 — 코테',  t:'알고리즘·자료구조 개념 1개 정리', g:'cc'},
-    {s:'저녁 — 코테',  t:'관련 문제 2개 풀기', g:'cc'},
-    {s:'저녁 — 코테',  t:'못 푼 문제 풀이 확인', g:'cc'},
-    {s:'공고',         t:'채용 공고 확인 (10분)', g:'cg'},
-  ],
-  4: [
-    {s:'출근 지하철',  t:'토익 LC 10문제 (가볍게)', g:'ct'},
-    {s:'단어',         t:'해커스 토익 단어 unit 3개 암기', g:'cv'},
-    {s:'단어',         t:'전날 틀린 단어 재암기', g:'cv'},
-    {s:'퇴근 지하철',  t:'코테 문제 1개 (가볍게)', g:'cc'},
-    {s:'공고',         t:'채용 공고 확인 (10분)', g:'cg'},
-  ],
-  5: [
-    {s:'출근 지하철',  t:'토익 LC 10문제', g:'ct'},
-    {s:'단어',         t:'해커스 토익 단어 unit 3개 암기', g:'cv'},
-    {s:'단어',         t:'전날 틀린 단어 재암기', g:'cv'},
-    {s:'저녁 — 토스',  t:'파트5 템플릿 소리 내어 5회 반복', g:'cs'},
-    {s:'저녁 — 토스',  t:'실제 문제 답변 녹음 후 셀프 체크', g:'cs'},
-    {s:'저녁 — 토스',  t:'RC 파트7 지문 1개 (토익 감 유지)', g:'ct'},
-    {s:'공고',         t:'채용 공고 확인 (10분)', g:'cg'},
-  ],
-  6: [
-    {s:'단어 테스트',  t:'해커스 토익 단어 — 월~금 진행 단어 테스트', g:'ct'},
-    {s:'단어 테스트',  t:'틀린 단어 오답노트 정리', g:'cv'},
-    {s:'오전 — 코테',  t:'실전 모의 코테 2시간 (타이머)', g:'cc'},
-    {s:'오전 — 코테',  t:'풀이 복기 + 유형 패턴 정리', g:'cc'},
-    {s:'오후 — 토익',  t:'토익 실전 모의 1회 (파트 전체)', g:'ct'},
-    {s:'오후 — NCS',   t:'NCS 유형 문제 30개', g:'cn'},
-    {s:'공고',         t:'채용 공고 확인 (10분)', g:'cg'},
-  ],
-};
+const DEFAULT_T = {};
 
 /* ── state ── */
 let state     = {};
@@ -604,8 +544,8 @@ function rData() {
     // 내보내기 — 체크 + 날짜별 수정 + 기본 루틴까지 백업
   </div>
   <div class="sectitle">
-    <span>요일별 기본 루틴 항목 수</span>
-    <button class="btn sm" onclick="resetTemplatesOnly()">기본값 복원</button>
+    <span>요일별 플래너 항목 수</span>
+    <button class="btn sm" onclick="resetTemplatesOnly()">플래너 재설정</button>
   </div>
   <div>`;
 
@@ -678,7 +618,7 @@ function impJSON(e) {
     try {
       const d   = JSON.parse(ev.target.result);
       state     = d.checks    || {};
-      templates = d.templates || clone(DEFAULT_T);
+      templates = d.templates || {};
       overrides = d.overrides || {};
       saveState(); saveTemplates(); saveOverrides();
       toast('데이터를 불러왔어요');
@@ -692,18 +632,14 @@ function impJSON(e) {
 
 function resetAll() {
   if (!confirm('체크 기록·날짜별 수정·기본 루틴이 모두 초기화됩니다.\n계속할까요?')) return;
-  state = {}; templates = clone(DEFAULT_T); overrides = {};
+  state = {}; templates = {}; overrides = {};
   saveState(); saveTemplates(); saveOverrides();
   toast('초기화 완료');
   rData(); updateChrome();
 }
 
 function resetTemplatesOnly() {
-  if (!confirm('기본 루틴을 기본값으로 되돌릴까요?\n체크 기록과 날짜별 수정은 유지됩니다.')) return;
-  templates = clone(DEFAULT_T);
-  saveTemplates();
-  toast('기본 루틴이 복원됐어요');
-  rData();
+  obReset();
 }
 
 /* ── view switching ── */
@@ -732,7 +668,7 @@ function initApp() {
   TODAY = stripT(new Date());
 
   try { const d = localStorage.getItem(LS_STATE);     state     = d ? JSON.parse(d) : {}; }             catch(e) { state = {}; }
-  try { const t = localStorage.getItem(LS_TEMPLATES); templates = t ? JSON.parse(t) : clone(DEFAULT_T); } catch(e) { templates = clone(DEFAULT_T); }
+  try { const t = localStorage.getItem(LS_TEMPLATES); templates = t ? JSON.parse(t) : {}; } catch(e) { templates = {}; }
   try { const o = localStorage.getItem(LS_OVERRIDES); overrides = o ? JSON.parse(o) : {}; }             catch(e) { overrides = {}; }
 
   calM     = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
@@ -751,6 +687,7 @@ function initApp() {
   initBoard();
 
   if (getSyncKey()) syncPull();
+  checkOnboarding();
 }
 
 document.addEventListener('DOMContentLoaded', initApp);

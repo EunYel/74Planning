@@ -692,6 +692,102 @@ body {
 }
 .b-mood-btn.on { border-color:var(--pt); background:rgba(79,142,247,.12); }
 
+/* ── onboarding ── */
+#obBg {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(13,15,20,.97);
+  z-index: 2000;
+  align-items: center; justify-content: center;
+  padding: 20px 16px;
+  overflow-y: auto;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.ob-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7);
+}
+.ob-wide { max-width: 700px; }
+.ob-brand { font-family: var(--mono); font-size: 11.5px; color: var(--pt); margin-bottom: 20px; letter-spacing: .1em; }
+.ob-h1 { font-size: 22px; font-weight: 700; color: var(--txt); margin-bottom: 10px; line-height: 1.3; }
+.ob-p { font-size: 13.5px; color: var(--mut); line-height: 1.7; margin-bottom: 20px; }
+.ob-label { font-family: var(--mono); font-size: 10.5px; color: var(--cmt); display: block; margin-bottom: 6px; letter-spacing: .06em; text-transform: uppercase; }
+.ob-hint { font-family: var(--mono); font-size: 11px; color: var(--cmt); margin-top: 8px; display: block; line-height: 1.6; }
+.ob-input {
+  font-family: var(--mono); font-size: 13px;
+  padding: 11px 13px; border: 1px solid var(--line);
+  border-radius: 10px; background: var(--bg); color: var(--txt); width: 100%;
+  transition: border-color .15s;
+}
+.ob-input:focus { outline: none; border-color: var(--pt-d); }
+.ob-input::placeholder { color: var(--gut); }
+.ob-flex { flex: 1; min-width: 120px; }
+.ob-sm { width: 82px; flex-shrink: 0; }
+.ob-btn {
+  font-family: var(--mono); font-size: 12.5px;
+  padding: 10px 18px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--bar);
+  color: var(--txt); cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.ob-pri { background: var(--pt); border-color: var(--pt); color: #03091f; font-weight: 700; }
+.ob-pri:hover { background: #6aa3f9; }
+.ob-ghost { background: transparent; }
+.ob-ghost:hover { border-color: var(--gut); }
+.ob-btn-sm { padding: 7px 13px; font-size: 12px; }
+.ob-footer { display: flex; justify-content: flex-end; gap: 8px; align-items: center; }
+.ob-dots { display: flex; gap: 6px; margin-bottom: 20px; }
+.ob-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); display: block; }
+.ob-dots span.on { background: var(--pt); }
+.ob-quick-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.ob-quick {
+  font-family: var(--mono); font-size: 12px;
+  padding: 5px 13px; border-radius: 20px;
+  border: 1px solid var(--line); background: transparent;
+  color: var(--mut); cursor: pointer; transition: all .15s;
+}
+.ob-quick:hover { border-color: var(--pt); color: var(--pt); background: rgba(79,142,247,.06); }
+.ob-add-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.ob-goal-list { min-height: 56px; }
+.ob-goal-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 0; border-bottom: 1px solid var(--line2);
+  font-family: var(--mono); font-size: 12.5px;
+}
+.ob-goal-name { flex: 1; color: var(--txt); }
+.ob-goal-hrs { color: var(--mut); font-size: 11.5px; }
+.ob-goal-del { background: transparent; border: none; color: var(--cmt); cursor: pointer; font-size: 17px; padding: 0 4px; line-height: 1; }
+.ob-goal-del:hover { color: #e07b7b; }
+.ob-hint-empty { font-family: var(--mono); font-size: 12px; color: var(--cmt); padding: 16px 0; }
+
+/* timetable */
+.ob-tt { display: flex; flex-direction: column; user-select: none; -webkit-user-select: none; min-width: 320px; }
+.ob-tt-row { display: grid; grid-template-columns: 44px repeat(7, 1fr); }
+.ob-tt-head .ob-tt-tc { }
+.ob-tt-dh { font-family: var(--mono); font-size: 11px; color: var(--mut); text-align: center; padding: 5px 0 8px; }
+.ob-tt-tc {
+  font-family: var(--mono); font-size: 9.5px; color: var(--cmt);
+  text-align: right; padding-right: 7px;
+  display: flex; align-items: center; justify-content: flex-end;
+  white-space: nowrap;
+}
+.ob-hr .ob-tt-tc { color: var(--mut); font-size: 10px; }
+.ob-tt-cell {
+  height: 18px;
+  border: 0.5px solid #1a1e28;
+  background: var(--cell);
+  cursor: pointer;
+  transition: background .05s;
+}
+.ob-tt-cell.on { background: var(--pt); opacity: .8; }
+.ob-tt-cell:hover { filter: brightness(1.15); }
+.ob-hr .ob-tt-cell { border-top-color: #252a36; }
+
 /* ── responsive: iPhone 16 Pro (393px) ── */
 @media (max-width: 430px) {
   body { padding: 0; background: #0d0f14; }

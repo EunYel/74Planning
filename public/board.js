@@ -33,9 +33,7 @@ let bS = {
 /* ── persistence ── */
 function bLoad() {
   try { const r = localStorage.getItem(BOARD_LS_POSTS); if (r) return JSON.parse(r); } catch(e){}
-  const s = bSeed();
-  try { localStorage.setItem(BOARD_LS_POSTS, JSON.stringify(s)); } catch(e){}
-  return s;
+  return [];
 }
 function bPersist(posts) {
   try { localStorage.setItem(BOARD_LS_POSTS, JSON.stringify(posts)); } catch(e){}
