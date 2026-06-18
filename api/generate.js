@@ -42,7 +42,9 @@ export default async function handler(req, res) {
 ${dailyInfo.map(d => `- ${d.name} (key: "${d.jsDay}"): ${d.hours}시간 (${d.ranges})`).join('\n')}
 
 ## 학습 목표
-${goals.map(g => `- ${g.name}: 주 ${g.weeklyHours}시간`).join('\n')}
+${goals.map(g => `- ${g.name}`).join('\n')}
+
+(목표별 시간 배분은 가용 시간을 균등하게 나눠 자동 결정하세요)
 
 ## 출력 형식 (JSON만, 설명 없이)
 {
@@ -90,7 +92,7 @@ ct=토익, cv=단어, cs=토스/스피킹, cc=코딩테스트, cj=자소서, cn=
 }
 
 function slotToTime(si) {
-  const h = 7 + Math.floor(si / 2);
+  const h = (7 + Math.floor(si / 2)) % 24;
   const m = (si % 2) * 30;
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }

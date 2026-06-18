@@ -7,15 +7,16 @@ const OB_GOALS_KEY = 'hajogi_goals';
 
 const OB_DAYS_KO = ['월','화','수','목','금','토','일'];
 const OB_TIMES   = [];
-for (let h = 7; h < 23; h++) {
+for (let h = 7; h <= 23; h++) {
   OB_TIMES.push({ label: `${String(h).padStart(2,'0')}:00`, isHour: true });
   OB_TIMES.push({ label: `${String(h).padStart(2,'0')}:30`, isHour: false });
 }
-// 32 slots: 07:00 ~ 22:30
+OB_TIMES.push({ label: '00:00', isHour: true });
+// 35 slots: 07:00 ~ 00:00
 
 let obS = {
   step:  1,
-  slots: Array.from({length:7}, () => new Array(32).fill(false)),
+  slots: Array.from({length:7}, () => new Array(35).fill(false)),
   goals: [],
   pendingPlan: null,
 };
@@ -61,10 +62,10 @@ function obGeneratePlan() {
     const tasks  = [];
     let   budget = avail;
 
+    const sharePerGoal = obS.goals.length > 0 ? avail / obS.goals.length : 0;
     for (const goal of obS.goals) {
       if (budget < 0.3) break;
-      const share  = totalHrs > 0 ? (avail / totalHrs) * goal.weeklyHours : 0;
-      const hours  = Math.min(share, budget);
+      const hours = Math.min(sharePerGoal, budget);
       if (hours < 0.25) continue;
 
       const preset = obGetPreset(goal.name);
@@ -154,23 +155,15 @@ function obUpdateHours() {
 /* ── goals ── */
 function obAddGoal() {
   const nEl = document.getElementById('ob-goal-name');
-  const hEl = document.getElementById('ob-goal-hours');
-  const name  = (nEl.value || '').trim();
-  const hours = parseFloat(hEl.value) || 0;
-  if (!name)      { nEl.focus(); return; }
-  if (hours <= 0) { hEl.focus(); return; }
+  const name = (nEl.value || '').trim();
+  if (!name) { nEl.focus(); return; }
   if (obS.goals.find(g => g.name === name)) { nEl.value = ''; nEl.focus(); return; }
-  obS.goals.push({ name, weeklyHours: hours });
-  nEl.value = ''; hEl.value = '';
+  obS.goals.push({ name });
+  nEl.value = '';
   nEl.focus();
   obRenderGoals();
 }
 function obRemoveGoal(i) { obS.goals.splice(i, 1); obRenderGoals(); }
-function obQuickAdd(name, hours) {
-  if (obS.goals.find(g => g.name === name)) return;
-  obS.goals.push({ name, weeklyHours: hours });
-  obRenderGoals();
-}
 function obRenderGoals() {
   const el = document.getElementById('ob-goal-list');
   if (!el) return;
@@ -181,7 +174,6 @@ function obRenderGoals() {
   el.innerHTML = obS.goals.map((g, i) => `
     <div class="ob-goal-row">
       <span class="ob-goal-name">${g.name}</span>
-      <span class="ob-goal-hrs">${g.weeklyHours}h/주</span>
       <button onclick="obRemoveGoal(${i})" class="ob-goal-del" title="삭제">×</button>
     </div>`).join('');
 }
@@ -231,20 +223,10 @@ function obRender() {
       <div class="ob-panel">
         <div class="ob-dots"><span class="on"></span><span class="on"></span><span class="on"></span><span></span></div>
         <h1 class="ob-h1">목표를 설정해요</h1>
-        <p class="ob-p">어떤 공부를 얼마나 할 계획인가요? 빠른 추가를 쓰거나 직접 입력해주세요.</p>
-
-        <div class="ob-quick-row">
-          <button onclick="obQuickAdd('토익',8)"   class="ob-quick">토익</button>
-          <button onclick="obQuickAdd('토스',3)"   class="ob-quick">토스</button>
-          <button onclick="obQuickAdd('코테',5)"   class="ob-quick">코테</button>
-          <button onclick="obQuickAdd('자소서',3)" class="ob-quick">자소서</button>
-          <button onclick="obQuickAdd('NCS',4)"    class="ob-quick">NCS</button>
-          <button onclick="obQuickAdd('자격증',5)" class="ob-quick">자격증</button>
-        </div>
+        <p class="ob-p">어떤 공부를 할 계획인가요? 시간 배분은 GPT가 자동으로 해줘요.</p>
 
         <div class="ob-add-row">
-          <input id="ob-goal-name"  type="text"   class="ob-input ob-flex" placeholder="목표 이름 (예: 정보처리기사)">
-          <input id="ob-goal-hours" type="number" class="ob-input ob-sm"   placeholder="h/주" min="0.5" max="80" step="0.5">
+          <input id="ob-goal-name" type="text" class="ob-input ob-flex" placeholder="목표 이름 (예: 토익, 정보처리기사)">
           <button onclick="obAddGoal()" class="ob-btn ob-pri ob-btn-sm">추가</button>
         </div>
 
@@ -257,9 +239,7 @@ function obRender() {
       </div>`;
     obRenderGoals();
     const nEl = document.getElementById('ob-goal-name');
-    const hEl = document.getElementById('ob-goal-hours');
-    nEl.addEventListener('keydown', e => { if (e.key === 'Enter') hEl.focus(); });
-    hEl.addEventListener('keydown', e => { if (e.key === 'Enter') obAddGoal(); });
+    nEl.addEventListener('keydown', e => { if (e.key === 'Enter') obAddGoal(); });
 
   } else if (obS.step === 4) {
     obRenderStep4();
@@ -444,7 +424,7 @@ function obSkip() {
 function obReset() {
   if (!confirm('플래너 설정을 처음부터 다시 할까요?\n\n✓ 유지되는 것: 체크 기록, 달력, 생각 기록\n✗ 새로 설정: 목표, 시간표, 플래너')) return;
   try { localStorage.removeItem(OB_DONE_KEY); } catch(e){}
-  obS = { step:1, slots:Array.from({length:7}, () => new Array(32).fill(false)), goals:[] };
+  obS = { step:1, slots:Array.from({length:7}, () => new Array(35).fill(false)), goals:[] };
   const slots = obLoadSlots(); if (slots) obS.slots = slots;
   const goals = obLoadGoals(); if (goals) obS.goals = goals;
   const bg = document.getElementById('obBg');
