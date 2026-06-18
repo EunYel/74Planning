@@ -531,7 +531,15 @@ function rData() {
        <div id="sync-status" class="note sync-note">// 노트북·폰에서 같은 키를 입력하면 데이터가 공유됩니다</div>`;
 
   const editedDays = Object.keys(overrides).length;
-  let h = syncBlock + `<div class="sectitle plain">// 데이터 · 백업</div>
+  let h = syncBlock + `<div class="sectitle plain">// 플래닝 다시 하기</div>
+  <div class="btnrow">
+    <button class="btn pri" onclick="resetTemplatesOnly()" style="flex:1">↺ 플래닝 처음부터 다시 하기</button>
+  </div>
+  <div class="note" style="padding:6px 0 14px">
+    // 목표·시간표·플래너를 처음부터 다시 설정합니다.<br>
+    // 체크 기록·달력·생각 기록은 그대로 유지됩니다.
+  </div>
+  <div class="sectitle plain">// 데이터 · 백업</div>
   <div class="btnrow">
     <button class="btn pri" onclick="expJSON()">↓ JSON 내보내기</button>
     <button class="btn" onclick="document.getElementById('fi').click()">↑ 불러오기</button>
@@ -545,7 +553,6 @@ function rData() {
   </div>
   <div class="sectitle">
     <span>요일별 플래너 항목 수</span>
-    <button class="btn sm" onclick="resetTemplatesOnly()">플래너 재설정</button>
   </div>
   <div>`;
 
