@@ -290,8 +290,20 @@ function rToday() {
   ln('blank', '');
 
   if (!ts.length) {
-    ln('cmt', '// 등록된 항목이 없습니다 — 달력 탭에서 추가하세요');
-    document.getElementById('v-today').innerHTML = `<div class="code">${L.join('')}</div>`;
+    const hasAnyTemplates = Object.keys(templates).some(k => Array.isArray(templates[k]) && templates[k].length > 0);
+    if (!hasAnyTemplates) {
+      document.getElementById('v-today').innerHTML = `
+        <div class="code">
+          ${L.join('')}
+          <div class="ln cmt"><div class="lc">// 아직 플래너가 없어요</div></div>
+          <div class="ln blank"><div class="lc"></div></div>
+          <div class="ln"><div class="lc">
+            <button class="btn pri" onclick="obReset()" style="margin-top:4px">플래너 만들기 →</button>
+          </div></div>
+        </div>`;
+    } else {
+      document.getElementById('v-today').innerHTML = `<div class="code">${L.join('')}<div class="ln cmt"><div class="lc">// 오늘은 등록된 항목이 없어요</div></div></div>`;
+    }
     return;
   }
 

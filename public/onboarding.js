@@ -255,43 +255,141 @@ function obEsc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Goal → color mapping for chips
+const OB_GOAL_COLORS = [
+  '#4f8ef7','#6ec96e','#e89a3a','#b57cf7','#3cc4c4','#e07070','#f7c44f',
+];
+function obGoalColor(sectionName) {
+  const idx = obS.goals.findIndex(g => g.name === sectionName);
+  if (idx >= 0) return OB_GOAL_COLORS[idx % OB_GOAL_COLORS.length];
+  return '#4a5068'; // 기타
+}
+
 function obRenderStep4() {
   const bg = document.getElementById('obBg');
   if (!bg) return;
 
-  const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
-  const DAY_NAMES_FULL = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+  // obIdx 0=월…6=일 → plan key 1=월…0=일
+  const dayMap   = [1, 2, 3, 4, 5, 6, 0];
+  const DAY_KO   = ['월','화','수','목','금','토','일'];
+  const SLOT_H   = 18; // px per 30-min slot
+  const TOTAL_H  = OB_TIMES.length * SLOT_H; // 35 × 18 = 630px
 
-  let daysHtml = '';
-  for (const dk of DAY_ORDER) {
-    const tasks = obS.pendingPlan && Array.isArray(obS.pendingPlan[dk]) ? obS.pendingPlan[dk] : [];
-    if (!tasks.length) continue;
+  // Column header height (day name row) — ticks must be offset to align with body
+  const HDR_H = 28;
 
-    let tasksHtml = tasks.map((task, idx) => `
-      <div class="ob-plan-task">
-        <span class="ob-plan-s">${obEsc(task.s)}</span>
-        <div class="ob-plan-t" contenteditable="true" data-day="${dk}" data-idx="${idx}">${obEsc(task.t)}</div>
-        <button class="ob-plan-del" onclick="obPlanRemoveTask(${dk},${idx})">×</button>
-      </div>`).join('');
+  // Time axis tick marks (every hour) — offset by HDR_H so they align with column body
+  let timeAxis = '';
+  OB_TIMES.forEach((t, si) => {
+    if (t.isHour) timeAxis += `<div class="ob-pv-tick" style="top:${HDR_H + si * SLOT_H}px">${t.label}</div>`;
+  });
 
-    daysHtml += `
-      <div class="ob-plan-day">
-        <div class="ob-plan-day-hd">
-          <span>${DAY_NAMES_FULL[dk]}</span>
-          <span class="ob-plan-cnt">${tasks.length}개</span>
-        </div>
-        <div class="ob-plan-tasks">${tasksHtml}</div>
-        <button class="ob-plan-add" onclick="obPlanAddTask(${dk})">+ 태스크 추가</button>
+  // Horizontal hour lines inside each column
+  let hrLines = '';
+  OB_TIMES.forEach((t, si) => {
+    if (t.isHour) hrLines += `<div class="ob-pv-hline" style="top:${si * SLOT_H}px"></div>`;
+  });
+
+  let colsHtml = '';
+  for (let di = 0; di < 7; di++) {
+    const dk    = dayMap[di];
+    const tasks = (obS.pendingPlan && Array.isArray(obS.pendingPlan[dk])) ? obS.pendingPlan[dk] : [];
+
+    // Find continuous selected sessions for this day
+    const sessions = [];
+    let sesStart = -1;
+    obS.slots[di].forEach((on, si) => {
+      if (on  && sesStart === -1) sesStart = si;
+      if (!on && sesStart !== -1) { sessions.push({ start: sesStart, end: si }); sesStart = -1; }
+    });
+    if (sesStart !== -1) sessions.push({ start: sesStart, end: OB_TIMES.length });
+
+    // Distribute tasks proportionally across sessions
+    const totalSlots = sessions.reduce((s, ses) => s + ses.end - ses.start, 0);
+    let tIdx = 0;
+    const sesWithTasks = sessions.map(ses => {
+      const slots  = ses.end - ses.start;
+      const ratio  = totalSlots > 0 ? slots / totalSlots : 0;
+      const nTasks = Math.round(tasks.length * ratio);
+      const indices = [];
+      for (let i = tIdx; i < tIdx + nTasks && i < tasks.length; i++) indices.push(i);
+      tIdx += nTasks;
+      return { ...ses, indices };
+    });
+    // Assign any leftover tasks to last session
+    if (tIdx < tasks.length && sesWithTasks.length) {
+      for (let i = tIdx; i < tasks.length; i++) sesWithTasks[sesWithTasks.length - 1].indices.push(i);
+    }
+
+    // Handle tasks on days with no timetable slots
+    const extraTasks = sessions.length === 0 && tasks.length
+      ? tasks.map((_, i) => i)
+      : [];
+
+    // Build session blocks
+    let sesHtml = sesWithTasks.map(ses => {
+      const top    = ses.start * SLOT_H;
+      const height = (ses.end - ses.start) * SLOT_H;
+      if (height === 0) return '';
+      const chipPx   = 22;
+      const maxChips = Math.max(1, Math.floor((height - 6) / (chipPx + 2)));
+      const visible  = ses.indices.slice(0, maxChips);
+      const overflow = ses.indices.length - visible.length;
+
+      const chipsHtml = visible.map(idx => {
+        const task  = tasks[idx];
+        const color = obGoalColor(task.s);
+        return `<div class="ob-pv-chip" style="border-left-color:${color}" onclick="event.stopPropagation()">
+          <span class="ob-pv-chip-s" style="color:${color}">${obEsc(task.s)}</span>
+          <div class="ob-pv-chip-t" contenteditable="true" data-day="${dk}" data-idx="${idx}">${obEsc(task.t)}</div>
+          <button class="ob-pv-chip-del" onclick="event.stopPropagation();obPlanRemoveTask(${dk},${idx})">×</button>
+        </div>`;
+      }).join('');
+
+      const moreHtml   = overflow > 0 ? `<div class="ob-pv-more">+${overflow}개 더</div>` : '';
+      const addHint    = ses.indices.length === 0
+        ? `<div class="ob-pv-ses-add">+ 추가</div>`
+        : '';
+
+      return `<div class="ob-pv-session" style="top:${top}px;height:${height}px"
+                   onclick="obPlanAddTask(${dk})">
+        ${chipsHtml}${moreHtml}${addHint}
       </div>`;
+    }).join('');
+
+    // Extra tasks (no timetable for this day) shown as floating chips at top
+    if (extraTasks.length) {
+      sesHtml += extraTasks.map(idx => {
+        const task  = tasks[idx];
+        const color = obGoalColor(task.s);
+        return `<div class="ob-pv-chip" style="border-left-color:${color};position:relative;margin:2px 1px">
+          <span class="ob-pv-chip-s" style="color:${color}">${obEsc(task.s)}</span>
+          <div class="ob-pv-chip-t" contenteditable="true" data-day="${dk}" data-idx="${idx}">${obEsc(task.t)}</div>
+          <button class="ob-pv-chip-del" onclick="event.stopPropagation();obPlanRemoveTask(${dk},${idx})">×</button>
+        </div>`;
+      }).join('');
+    }
+
+    colsHtml += `<div class="ob-pv-col">
+      <div class="ob-pv-col-hd">${DAY_KO[di]}</div>
+      <div class="ob-pv-col-body" style="height:${TOTAL_H}px">
+        ${hrLines}${sesHtml}
+      </div>
+    </div>`;
   }
 
   bg.innerHTML = `
-    <div class="ob-panel ob-wide">
+    <div class="ob-panel ob-wide" style="max-width:780px">
       <div class="ob-dots"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span></div>
       <h1 class="ob-h1">플래너 미리보기</h1>
-      <p class="ob-p">태스크를 클릭해서 수정하거나 × 로 삭제할 수 있어요. 하루에 태스크를 직접 추가할 수도 있어요.</p>
-      <div class="ob-plan-days">${daysHtml}</div>
-      <div class="ob-footer" style="margin-top:20px">
+      <p class="ob-p">선택한 시간대에 태스크가 배치됐어요. 태스크 텍스트를 눌러 수정하거나 × 로 삭제, 빈 시간대를 눌러 추가할 수 있어요.</p>
+      <div class="ob-pv-wrap">
+        <div class="ob-pv-grid">
+          <div class="ob-pv-time" style="height:${TOTAL_H + HDR_H}px">${timeAxis}</div>
+          <div class="ob-pv-cols">${colsHtml}</div>
+        </div>
+      </div>
+      <div class="ob-footer" style="margin-top:14px">
         <button onclick="obGoTo(3)" class="ob-btn ob-ghost">← 이전</button>
         <button onclick="obConfirm()" class="ob-btn ob-pri">확정하기 →</button>
       </div>
@@ -299,12 +397,12 @@ function obRenderStep4() {
 }
 
 function obFlushPlan() {
-  document.querySelectorAll('.ob-plan-t[contenteditable]').forEach(el => {
-    const dk  = parseInt(el.dataset.day);
+  document.querySelectorAll('[contenteditable][data-day][data-idx]').forEach(el => {
+    const d   = parseInt(el.dataset.day);
     const idx = parseInt(el.dataset.idx);
-    if (obS.pendingPlan && Array.isArray(obS.pendingPlan[dk]) && obS.pendingPlan[dk][idx]) {
+    if (obS.pendingPlan && Array.isArray(obS.pendingPlan[d]) && obS.pendingPlan[d][idx]) {
       const val = el.textContent.trim();
-      if (val) obS.pendingPlan[dk][idx].t = val;
+      if (val) obS.pendingPlan[d][idx].t = val;
     }
   });
 }
@@ -324,7 +422,7 @@ function obPlanAddTask(dk) {
   obS.pendingPlan[dk].push({ s: '기타', t: '새 태스크' });
   obRenderStep4();
   setTimeout(() => {
-    const dayTasks = document.querySelectorAll(`.ob-plan-t[data-day="${dk}"]`);
+    const dayTasks = document.querySelectorAll(`[contenteditable][data-day="${dk}"]`);
     if (dayTasks.length) {
       const el = dayTasks[dayTasks.length - 1];
       el.focus();
@@ -424,7 +522,9 @@ function obSkip() {
 
 /* ── public: reset from data tab ── */
 function obReset() {
-  if (!confirm('플래너 설정을 처음부터 다시 할까요?\n\n✓ 유지되는 것: 체크 기록, 달력, 생각 기록\n✗ 새로 설정: 목표, 시간표, 플래너')) return;
+  const hasTemplates = typeof templates !== 'undefined' &&
+    Object.keys(templates).some(k => Array.isArray(templates[k]) && templates[k].length > 0);
+  if (hasTemplates && !confirm('플래너 설정을 처음부터 다시 할까요?\n\n✓ 유지되는 것: 체크 기록, 달력, 생각 기록\n✗ 새로 설정: 목표, 시간표, 플래너')) return;
   try { localStorage.removeItem(OB_DONE_KEY); } catch(e){}
   obS = { step:1, slots:Array.from({length:7}, () => new Array(35).fill(false)), goals:[] };
   const slots = obLoadSlots(); if (slots) obS.slots = slots;
