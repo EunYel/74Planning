@@ -545,6 +545,7 @@ function rData() {
     <button class="btn" onclick="document.getElementById('fi').click()">↑ 불러오기</button>
     <input type="file" id="fi" accept=".json" style="display:none" onchange="impJSON(event)">
     <button class="btn red" onclick="resetAll()">⟲ 전체 초기화</button>
+    <button class="btn red" onclick="resetBoard()">🗑 생각.md 초기화</button>
   </div>
   <div class="note" style="padding:6px 0 14px">
     // 자동 저장 — 체크·추가·수정·삭제 모두 브라우저에 저장됩니다.<br>

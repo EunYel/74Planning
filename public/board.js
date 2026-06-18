@@ -59,6 +59,13 @@ function bFmtRel(ts)  {
 }
 function bE(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+/* ── reset ── */
+function resetBoard() {
+  if (!confirm('생각.md의 모든 글을 삭제할까요?\n되돌릴 수 없어요.')) return;
+  bSave([]);
+  toast('생각.md를 초기화했어요');
+}
+
 /* ── nav ── */
 function bSetView(v)    { bS.view=v; bS.detailId=null; rBoard(); }
 function bOpenDetail(id){ bS.detailId=id; bS.replyTo=null; bS.replyDraft=''; rBoard(); }
