@@ -3,7 +3,6 @@
 /* ── constants ── */
 const DAYS  = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const DKOR  = ['일','월','화','수','목','금','토'];
-const TAG_LABELS = { ct:'토익', cv:'단어', cs:'토스', cc:'코테', cj:'자소서', cn:'NCS', cg:'기타' };
 const QUOTES = [
   '오늘 한 문제가 석 달 뒤 합격을 만든다.',
   '완벽보다 꾸준함. 매일 조금씩.',
@@ -12,7 +11,6 @@ const QUOTES = [
   '느려도 멈추지만 않으면 도착한다.',
   '할 수 있는 만큼, 대신 매일.',
   '작은 루틴이 큰 합격을 만든다.',
-  '커밋은 작게, 자주.',
   '오늘 치 분량만. 그거면 충분.',
 ];
 
@@ -30,10 +28,10 @@ let activeView = 'today';
 let TODAY;
 
 /* ── localStorage keys ── */
-const LS_STATE     = 'hajogi_v2_state';
-const LS_TEMPLATES = 'hajogi_v2_templates';
-const LS_OVERRIDES = 'hajogi_v3_overrides';
-const LS_SYNC_KEY  = 'hajogi_sync_key';
+const LS_STATE     = '74plan_state';
+const LS_TEMPLATES = '74plan_templates';
+const LS_OVERRIDES = '74plan_overrides';
+const LS_SYNC_KEY  = '74plan_sync_key';
 
 /* ── helpers ── */
 function dk(d) {
@@ -308,7 +306,7 @@ function rToday() {
       const on = gc(key, t.i);
       lnTask(
         on ? 'on' : '',
-        `<span class="cbx">[${on?'x':' '}]</span><span class="ttxt">${esc(t.t)}</span><span class="thash">#${TAG_LABELS[t.g]||t.g}</span>`,
+        `<span class="cbx">[${on?'x':' '}]</span><span class="ttxt">${esc(t.t)}</span>`,
         `onclick="toggleCheck('${key}',${t.i})"`
       );
     });
@@ -417,7 +415,6 @@ function detailHTML(key) {
         h += `<div class="erow ${on?'on':''}">
           <span class="cbx" style="color:${on?'var(--pt)':'var(--mut)'}" onclick="toggleCheck('${key}',${t.i})">[${on?'x':' '}]</span>
           <span class="ttxt" onclick="toggleCheck('${key}',${t.i})" style="cursor:pointer">${esc(t.t)}</span>
-          <span class="thash">#${TAG_LABELS[t.g]||t.g}</span>
           <span class="eact">
             <button class="ebtn" onclick="openEditModal('${key}',${t.i})" title="수정">✎</button>
             <button class="ebtn del" onclick="deleteTask('${key}',${t.i})" title="삭제">✕</button>
@@ -430,12 +427,6 @@ function detailHTML(key) {
   h += `<div class="addbox">
     <div class="addflex">
       <input type="text" id="add-section" placeholder="section (예: 저녁 — 토익)">
-      <select id="add-tag">
-        <option value="ct">토익</option><option value="cv">단어</option>
-        <option value="cs">토스</option><option value="cc">코테</option>
-        <option value="cj">자소서</option><option value="cn">NCS</option>
-        <option value="cg">기타</option>
-      </select>
     </div>
     <div class="addflex">
       <input type="text" id="add-text" placeholder="+ 이 날짜에 새 항목">
@@ -461,11 +452,10 @@ function reindexDate(key, delIdx) {
 function addTask(key) {
   const se = document.getElementById('add-section');
   const te = document.getElementById('add-text');
-  const ge = document.getElementById('add-tag');
   const section = se.value.trim() || '기타';
   const text    = te.value.trim();
   if (!text) { toast('내용을 입력해주세요'); return; }
-  ensureOverride(key).push({ s: section, t: text, g: ge.value });
+  ensureOverride(key).push({ s: section, t: text });
   saveOverrides();
   te.value = '';
   toast('이 날짜에 항목을 추가했어요');
@@ -487,7 +477,6 @@ function openEditModal(key, idx) {
   const t = listFor(keyToDate(key))[idx];
   document.getElementById('m-section').value = t.s;
   document.getElementById('m-text').value    = t.t;
-  document.getElementById('m-tag').value     = t.g;
   document.getElementById('modalBg').classList.add('show');
 }
 function closeModal() {
@@ -499,9 +488,8 @@ function saveModal() {
   const {key, idx} = modalCtx;
   const section = document.getElementById('m-section').value.trim() || '기타';
   const text    = document.getElementById('m-text').value.trim();
-  const tag     = document.getElementById('m-tag').value;
   if (!text) { toast('내용을 입력해주세요'); return; }
-  ensureOverride(key)[idx] = { s: section, t: text, g: tag };
+  ensureOverride(key)[idx] = { s: section, t: text };
   saveOverrides();
   closeModal();
   toast('이 날짜 항목을 수정했어요');
@@ -612,7 +600,7 @@ function expJSON() {
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href = url;
-  a.download = `hajogi_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `74plan_backup_${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
   toast('JSON으로 저장됐어요');

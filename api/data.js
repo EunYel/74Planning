@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: '키가 너무 짧습니다 (4자 이상)' });
   }
 
-  const storageKey = `hajogi:${key}`;
+  const storageKey = `74plan:${key}`;
 
   if (req.method === 'GET') {
     const data = await redis.get(storageKey);

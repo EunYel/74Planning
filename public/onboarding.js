@@ -1,9 +1,9 @@
 'use strict';
 /* ── Onboarding / Planner Wizard ── */
 
-const OB_DONE_KEY  = 'hajogi_onboarding_done';
-const OB_SLOTS_KEY = 'hajogi_timetable';
-const OB_GOALS_KEY = 'hajogi_goals';
+const OB_DONE_KEY  = '74plan_onboarding_done';
+const OB_SLOTS_KEY = '74plan_timetable';
+const OB_GOALS_KEY = '74plan_goals';
 
 const OB_DAYS_KO = ['월','화','수','목','금','토','일'];
 const OB_TIMES   = [];
@@ -70,11 +70,11 @@ function obGeneratePlan() {
 
       const preset = obGetPreset(goal.name);
       const n      = Math.max(1, Math.round(hours * 2));
-      preset.tasks.slice(0, n).forEach(t => tasks.push({ s: goal.name, t, g: preset.code }));
+      preset.tasks.slice(0, n).forEach(t => tasks.push({ s: goal.name, t }));
       budget -= hours;
     }
 
-    tasks.push({ s: '기타', t: '채용 공고 확인 (10분)', g: 'cg' });
+    tasks.push({ s: '기타', t: '채용 공고 확인 (10분)' });
     result[dayNum] = tasks;
   }
   return result;
@@ -185,13 +185,15 @@ function obRender() {
 
   if (obS.step === 1) {
     const existingKey = (typeof getSyncKey === 'function') ? (getSyncKey() || '') : '';
+    // 이미 키가 있으면 step 1 건너뛰고 바로 step 2로
+    if (existingKey) { obGoTo(2); return; }
     bg.innerHTML = `
       <div class="ob-panel">
         <div class="ob-brand">// 74Planning</div>
         <h1 class="ob-h1">시작하기</h1>
         <p class="ob-p">동기화 키를 설정하면 노트북과 폰에서 데이터를 공유할 수 있어요.<br>나만 아는 단어나 문구를 사용해주세요.</p>
         <label class="ob-label">동기화 키 (비밀번호)</label>
-        <input id="ob-key" type="text" class="ob-input" placeholder="4자 이상 입력..." autocomplete="off" spellcheck="false" value="${existingKey}">
+        <input id="ob-key" type="text" class="ob-input" placeholder="4자 이상 입력..." autocomplete="off" spellcheck="false">
         <span class="ob-hint">// 이 키는 나만 알고 있어야 해요. 같은 키를 여러 기기에서 입력하면 데이터가 공유됩니다.</span>
         <div class="ob-footer">
           <button onclick="obSkip()" class="ob-btn ob-ghost">건너뛰기</button>
@@ -223,7 +225,7 @@ function obRender() {
       <div class="ob-panel">
         <div class="ob-dots"><span class="on"></span><span class="on"></span><span class="on"></span><span></span></div>
         <h1 class="ob-h1">목표를 설정해요</h1>
-        <p class="ob-p">어떤 공부를 할 계획인가요? 시간 배분은 GPT가 자동으로 해줘요.</p>
+        <p class="ob-p">어떤 공부를 할 계획인가요? 시간 배분은 AI가 자동으로 해줘요.</p>
 
         <div class="ob-add-row">
           <input id="ob-goal-name" type="text" class="ob-input ob-flex" placeholder="목표 이름 (예: 토익, 정보처리기사)">
@@ -319,7 +321,7 @@ function obPlanAddTask(dk) {
   obFlushPlan();
   if (!obS.pendingPlan) obS.pendingPlan = {};
   if (!Array.isArray(obS.pendingPlan[dk])) obS.pendingPlan[dk] = [];
-  obS.pendingPlan[dk].push({ s: '기타', t: '새 태스크', g: 'cg' });
+  obS.pendingPlan[dk].push({ s: '기타', t: '새 태스크' });
   obRenderStep4();
   setTimeout(() => {
     const dayTasks = document.querySelectorAll(`.ob-plan-t[data-day="${dk}"]`);
@@ -388,7 +390,7 @@ async function obFinish() {
   if (bg) bg.innerHTML = `
     <div class="ob-panel" style="text-align:center;padding:52px 28px">
       <div class="ob-spinner"></div>
-      <div style="font-family:var(--mono);font-size:13px;color:var(--mut);margin-top:20px">// GPT가 플래너를 생성하고 있어요...</div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--mut);margin-top:20px">// 플래너를 생성하고 있어요...</div>
       <div style="font-family:var(--mono);font-size:11px;color:var(--cmt);margin-top:8px">목표와 시간표를 분석 중</div>
     </div>`;
 

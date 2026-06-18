@@ -48,26 +48,23 @@ ${goals.map(g => `- ${g.name}`).join('\n')}
 
 ## 출력 형식 (JSON만, 설명 없이)
 {
-  "1": [{"s":"섹션명","t":"구체적 태스크 (30-60분 분량)","g":"태그코드"}],
+  "1": [{"s":"섹션명","t":"구체적 태스크 (30-60분 분량)"}],
   "2": [...],
   ...
 }
 
-## 태그 코드
-ct=토익, cv=단어, cs=토스/스피킹, cc=코딩테스트, cj=자소서, cn=NCS, cg=기타
-
 ## 규칙
 1. JSON 키는 위의 key 값만 사용 (가용시간 있는 요일만)
-2. 목표 시간을 가용시간 비율대로 요일에 배분
+2. 목표별 시간을 균등하게 배분
 3. 태스크는 한국어, 구체적·실행 가능하게 (추상적 금지)
 4. 같은 날 태스크 반복 금지 — 다양하게
 5. 섹션명(s)은 목표명 또는 시간대(예: "저녁 — 토익")
-6. 매일 마지막 항목: {"s":"기타","t":"채용 공고 확인 (10분)","g":"cg"}
+6. 매일 마지막 항목: {"s":"기타","t":"채용 공고 확인 (10분)"}
 7. 유효한 JSON만 반환`;
 
   try {
     const completion = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5o-mini',
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
       temperature: 0.7,
@@ -77,11 +74,13 @@ ct=토익, cv=단어, cs=토스/스피킹, cc=코딩테스트, cj=자소서, cn=
     const raw  = completion.choices[0].message.content;
     const json = JSON.parse(raw);
 
-    // 숫자 키로 정규화
+    // 숫자 키로 정규화, g 필드 제거
     const plan = {};
     for (let i = 0; i <= 6; i++) {
       const tasks = json[String(i)] || json[i];
-      plan[i] = Array.isArray(tasks) ? tasks : [];
+      plan[i] = Array.isArray(tasks)
+        ? tasks.map(({ s, t }) => ({ s, t }))
+        : [];
     }
 
     return res.status(200).json({ plan });
