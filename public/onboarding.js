@@ -365,7 +365,12 @@ function obConfirm() {
   try { localStorage.setItem(OB_DONE_KEY, '1'); } catch(e){}
   const bg = document.getElementById('obBg');
   if (bg) { bg.style.display = 'none'; bg.innerHTML = ''; }
-  if (typeof initApp === 'function') initApp();
+  // 인메모리 templates 직접 갱신 — syncPull이 비동기로 새 플랜을 덮어쓰는 것을 방지
+  try { if (typeof templates !== 'undefined') templates = JSON.parse(JSON.stringify(obS.pendingPlan)); } catch(e) {}
+  if (typeof rerenderActive === 'function') rerenderActive();
+  if (typeof updateChrome === 'function') updateChrome();
+  // pull 대신 push — 서버 구데이터가 새 플랜을 덮어쓰지 않도록
+  if (typeof getSyncKey === 'function' && getSyncKey() && typeof syncPush === 'function') syncPush();
   setTimeout(() => { if (typeof toast === 'function') toast('플래너가 생성됐어요 🎉'); }, 100);
 }
 
