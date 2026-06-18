@@ -1,3 +1,4 @@
 {
-  "outputDirectory": "public"
+  "outputDirectory": "public",
+  "devCommand": "npx serve public --listen $PORT"
 }
