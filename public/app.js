@@ -544,8 +544,7 @@ function rData() {
     <button class="btn pri" onclick="expJSON()">↓ JSON 내보내기</button>
     <button class="btn" onclick="document.getElementById('fi').click()">↑ 불러오기</button>
     <input type="file" id="fi" accept=".json" style="display:none" onchange="impJSON(event)">
-    <button class="btn red" onclick="resetAll()">⟲ 전체 초기화</button>
-    <button class="btn red" onclick="resetBoard()">🗑 생각.md 초기화</button>
+    <button class="btn red" onclick="resetAll()">⟲ 전체 초기화 (처음으로)</button>
   </div>
   <div class="note" style="padding:6px 0 14px">
     // 자동 저장 — 체크·추가·수정·삭제 모두 브라우저에 저장됩니다.<br>
@@ -639,11 +638,9 @@ function impJSON(e) {
 }
 
 function resetAll() {
-  if (!confirm('체크 기록·날짜별 수정·기본 루틴이 모두 초기화됩니다.\n계속할까요?')) return;
-  state = {}; templates = {}; overrides = {};
-  saveState(); saveTemplates(); saveOverrides();
-  toast('초기화 완료');
-  rData(); updateChrome();
+  if (!confirm('모든 데이터(플래너·체크 기록·생각.md·연동키)를 초기화하고\n처음 화면으로 돌아갈까요?\n\n되돌릴 수 없어요.')) return;
+  localStorage.clear();
+  location.reload();
 }
 
 function resetTemplatesOnly() {
