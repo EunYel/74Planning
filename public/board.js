@@ -376,27 +376,6 @@ function rBoard() {
   }
 }
 
-/* ── seed ── */
-function bSeed() {
-  const now=Date.now(), H=3600000, D=86400000;
-  return [
-    {id:'s1', title:'토익 모의고사 첫 900 넘김', author:'나', category:'회고', mood:'🔥', tags:['토익','기록'], thumb:null, likes:5, liked:false, bookmarked:true, createdAt:now-2*H, updatedAt:now-2*H,
-      body:'LC가 생각보다 잘 들렸다. 파트3·4에서 보기 미리보기 전략이 제대로 먹혔음.\nRC는 시간이 부족했지만 찍은 게 많이 맞았다... 운도 실력이라 치자.\n\n다음 목표는 실전에서도 안정적으로 900 유지하기.',
-      comments:[{id:'c1', author:'스터디원', body:'오 축하해요!! 파트3 미리보기 팁 좀 알려주세요', createdAt:now-90*60000, replies:[
-        {id:'c2', author:'나', body:'문제 음성 나오기 전에 보기 3개의 키워드만 빠르게 스캔해요. 누가/어디/무엇 위주로!', createdAt:now-60*60000, replies:[
-          {id:'c3', author:'스터디원', body:'감사합니다 오늘 바로 적용해볼게요 🙏', createdAt:now-50*60000, replies:[]}
-        ]}
-      ]}]},
-    {id:'s2', title:'코테가 자꾸 막힌다', author:'나', category:'고민', mood:'😣', tags:['코테','고민'], thumb:null, likes:2, liked:false, bookmarked:false, createdAt:now-1*D, updatedAt:now-1*D,
-      body:'DP만 나오면 손이 멈춘다. 점화식 세우는 감이 아직 안 잡힘.\n기초 유형부터 다시 정리해야 하나 싶다.',
-      comments:[{id:'c4', author:'멘토', body:'DP는 작은 입력부터 손으로 표를 그려보는 게 제일 빨라요. 점화식은 그 다음에 자연스럽게 보입니다.', createdAt:now-20*H, replies:[]}]},
-    {id:'s3', title:'자소서를 STAR 구조로 다시 써봄', author:'나', category:'아이디어', mood:'🤔', tags:['자소서'], thumb:null, likes:1, liked:false, bookmarked:false, createdAt:now-2*D, updatedAt:now-2*D,
-      body:'상황-과제-행동-결과 순서로 경험 1개를 정리했더니 훨씬 읽기 쉬워졌다.\n행동 파트를 구체적으로 쓰는 게 핵심인 듯.', comments:[]},
-    {id:'s4', title:'오늘은 그냥 좀 쉬었다', author:'나', category:'감정', mood:'😌', tags:['일상'], thumb:null, likes:3, liked:false, bookmarked:false, createdAt:now-3*D, updatedAt:now-3*D,
-      body:'번아웃 오기 전에 의도적으로 쉬는 날. 산책하고 영화 한 편 봤다.\n내일부터 다시.', comments:[]},
-  ];
-}
-
 /* ── init ── */
 function initBoard() {
   bS.posts  = bLoad();
